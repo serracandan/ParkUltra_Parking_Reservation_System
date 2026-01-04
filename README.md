@@ -11,10 +11,10 @@ ParkUltra is a full-stack web application that enables users to make hourly or d
 - Ultra Simulation Mode: Automatically populates the database with thousands of random reservations upon server startup to create a realistic, high-traffic environment.
 
 🛠 Tech Stack
-Frontend: HTML5, CSS3 (Modern Flexbox/Grid), JavaScript (Vanilla ES6+).
-Backend: Node.js, Express.js.
-Database: SQLite3.
-UI/UX: Custom Toast Notification System and Responsive Dashboard Design.
+- Frontend: HTML5, CSS3 (Modern Flexbox/Grid), JavaScript (Vanilla ES6+).
+- Backend: Node.js, Express.js.
+- Database: SQLite3.
+- UI/UX: Custom Toast Notification System and Responsive Dashboard Design.
 
-Project Details
+Project Details:
 This project was developed as part of the Advanced Web Design (JavaScript) course. It demonstrates full-stack integration, database management, and interactive UI patterns.
