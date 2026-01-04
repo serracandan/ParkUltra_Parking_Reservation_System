@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ParkUltra - Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --brand-color: #2563eb; /* Royal Blue */
+            --brand-dark: #1e40af;
+            --accent: #ffffff;      /* Amber */
+            --bg-light: #f3f4f6;
+            --text-dark: #2563eb;
+            --text-grey: #2563eb;
+            --white: #ffffff;
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0; padding: 0;
+            background-image: url('otopark_3.jpeg');
+
+            background-size: cover;
+
+            /* Görseli yatay ve dikey olarak ortalar */
+            background-position: center;
+
+            /* Sayfa kaydırıldığında arka planın sabit kalmasını sağlar */
+            background-attachment: fixed;
+
+            /* Görsel yüklenmezse gösterilecek yedek arka plan rengi */
+            background-color: #f4f4f4;
+            height: 100vh;
+            overflow: hidden; /* Scroll içeride olacak */
+            display: flex;
+        }
+
+        /* --- 1. GİRİŞ EKRANI (SPLIT SCREEN) --- */
+        #authContainer {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 9999; background: white;
+            display: flex;
+        }
+
+        .login-visual {
+            flex: 1;
+            background: linear-gradient(to bottom, rgba(30, 64, 175, 0.4), rgba(17, 24, 39, 0.8)), url('otopark.jpeg');
+
+            background-size: cover;      /* Fotoğrafı alanı kaplayacak şekilde yayar */
+            background-position: center; /* Fotoğrafı ortalar */
+            background-repeat: no-repeat;
+            display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            color: white; padding: 40px;
+        }
+
+        .login-visual h1 { font-size: 4rem; margin: 0; letter-spacing: -2px; line-height: 1; }
+        .login-visual p { font-size: 1.2rem; opacity: 0.8; }
+
+        .login-form-area {
+            flex: 1; max-width: 600px;
+            display: flex; flex-direction: column;
+            justify-content: center; padding: 60px;
+            background: white;
+        }
+
+        .input-group { margin-bottom: 20px; }
+        .input-group label { display: block; font-size: 13px; font-weight: 600; color: var(--text-grey); margin-bottom: 8px; text-transform: uppercase; }
+
+        input {
+            width: 100%; padding: 18px; border: 2px solid #e5e7eb;
+            border-radius: 12px; font-size: 16px; font-family: inherit;
+            transition: 0.3s; background: #f9fafb; outline: none;
+        }
+        input:focus { border-color: var(--brand-color); background: white; }
+
+        .btn-big {
+            width: 100%; padding: 20px; border: none;
+            background: var(--text-dark); color: white;
+            font-size: 16px; font-weight: 600; border-radius: 12px;
+            cursor: pointer; transition: 0.3s;
+        }
+        .btn-big:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
+        .btn-secondary-text { background: none; color: var(--brand-color); margin-top: 20px; cursor: pointer; text-align: center; font-weight: 600;}
+
+        /* --- 2. ANA UYGULAMA (SIDEBAR + CONTENT) --- */
+        #appContainer {
+            display: flex; width: 100%; height: 100%; opacity: 0; pointer-events: none; transition: opacity 0.5s;
+        }
+        #appContainer.active { opacity: 1; pointer-events: auto; }
+
+        #view-admin h3 {
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            margin-top: 30px;
+        }
+
+        #adminList {
+            max-height: 500px;
+            overflow-y: auto;
+            padding-right: 10px;
+        }
+
+        /* SOL MENÜ */
+        aside {
+            width: var(--sidebar-width);
+            background: white;
+            border-right: 1px solid #e5e7eb;
+            display: flex; flex-direction: column;
+            padding: 30px;
+        }
+
+        .brand { font-size: 24px; font-weight: 800; color: var(--brand-color); margin-bottom: 50px; letter-spacing: -1px; }
+
+        nav button {
+            background: transparent; border: none;
+            text-align: left; font-size: 16px; font-weight: 500;
+            color: var(--text-grey); padding: 15px;
+            cursor: pointer; border-radius: 10px; margin-bottom: 5px;
+            display: flex; align-items: center; gap: 10px; transition: 0.2s;
+        }
+        nav button:hover { background: #f3f4f6; color: var(--text-dark); }
+        nav button.active { background: var(--brand-color); color: white; box-shadow: 0 5px 15px rgba(37, 99, 235, 0.3); }
+
+        .user-profile {
+            margin-top: auto;
+            padding: 15px; background: #f9fafb;
+            border-radius: 12px;
+            display: flex; flex-direction: column;
+        }
+
+        /* SAĞ İÇERİK */
+        /* SAĞ İÇERİK ALANI */
+        main {
+            flex: 1;
+            padding: 40px;
+            overflow-y: auto;
+            position: relative;
+
+            /* --- İŞTE BU SATIR KURTARICI --- */
+            padding-bottom: 150px; /* Action Bar için fazladan boşluk */
+        }
+
+        /* BAŞLIKLAR */
+        .page-header { display: flex; justify-content: space-between; align-items: end; margin-bottom: 40px; }
+        .page-title { font-size: 32px; font-weight: 800; color: var(--text-dark); margin: 0; }
+        .page-subtitle { color: var(--text-grey); margin: 5px 0 0; }
+
+        /* KART TASARIMLARI (ŞUBELER) */
+        .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; }
+        .branch-card {
+            background: white; border-radius: 20px; padding: 30px;
+            transition: 0.3s; cursor: pointer; border: 1px solid transparent;
+            position: relative; overflow: hidden;
+        }
+        .branch-card:hover { transform: translateY(-5px); border-color: var(--brand-color); box-shadow: 0 20px 40px rgba(0,0,0,0.05); }
+        .branch-card::before {
+            content:''; position: absolute; top:0; left:0; width: 6px; height: 100%; background: var(--bg-light); transition: 0.3s;
+        }
+        .branch-card:hover::before { background: var(--brand-color); }
+
+        .card-number { font-size: 40px; font-weight: 800; color: var(--text-dark); margin: 20px 0; }
+        .badge { display: inline-block; padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background: #e0e7ff; color: var(--brand-color); }
+
+        /* OTOPARK GRID (Tablo Görünümü - YAYVAN/TAM GENİŞLİK) */
+        .parking-layout {
+            background: white; padding: 30px; border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.02);
+            overflow-x: auto; /* Taşarsa kaydırma çubuğu çıkar */
+            /* display: flex, justify-content vs. KALDIRILDI */
+        }
+
+        table {
+            border-collapse: separate;
+            border-spacing: 8px;
+            width: 100%; /* <-- Tekrar tam genişlik yapıldı */
+        }
+
+        th { text-transform: uppercase; font-size: 12px; color: var(--text-grey); letter-spacing: 1px; padding-bottom: 10px; text-align: center; }
+
+        td.cell {
+            /* width: 60px;  <-- Sabit genişlik KALDIRILDI, artık esnek */
+            height: 50px;
+            background: #f3f4f6; border-radius: 12px;
+            text-align: center; vertical-align: middle;
+            font-size: 11px; font-weight: 700; color: var(--text-grey);
+            cursor: pointer; transition: 0.2s; border: 2px solid transparent;
+        }
+
+        /* SEÇİLİ HÜCRE (Mavi) */
+        td.selected {
+            background-color: var(--brand-color) !important;
+            color: white !important;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(37,99,235,0.4);
+            border-color: var(--brand-dark) !important;
+        }
+
+        /* DOLU HÜCRE (Kırmızı) */
+        td.full {
+            background-color: #fee2e2 !important;
+            color: #ef4444 !important;
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none; /* Tıklanmasını engeller */
+        }
+
+        /* FLOATING ACTION BAR (Fiyat & Ödeme) */
+        /* --- ACTION BAR (YENİDEN FLOATING MOD) --- */
+        .action-bar {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+
+            /* Sidebar'ın genişliği (280px) + 30px boşluk bırakarak başlat */
+            left: calc(280px + 30px);
+            width: auto; /* Otomatik genişlik (sol ve sağa yaslı) */
+
+            background: var(--text-dark);
+            color: white;
+            padding: 20px 30px;
+            border-radius: 20px;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between; /* İçeriği iki yana yasla */
+
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            z-index: 1000; /* Her şeyin üstünde olsun */
+
+            /* Başlangıçta gizli olsun (aşağıda) */
+            transform: translateY(150px);
+            opacity: 0;
+            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .action-bar.visible {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .price-display { font-size: 24px; font-weight: 700; color: var(--accent); }
+
+        /* --- PLAKA GİRİŞ ALANI (DÜZELTİLDİ) --- */
+        .plate-input {
+            background: #ffffff;       /* Arka planı tam beyaz yap */
+            color: #111827;            /* Yazı rengini koyu (siyah) yap */
+            border: 2px solid #e5e7eb; /* Gri çerçeve ekle */
+
+            padding: 12px;
+            border-radius: 10px;
+            width: 180px;              /* Biraz daha genişletelim */
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 800;
+            font-size: 16px;
+            outline: none;             /* Tıklayınca çıkan standart çizgiyi kaldır */
+            transition: all 0.2s;
+        }
+
+        /* Tıklayınca çerçevesi mavi olsun */
+        .plate-input:focus {
+            border-color: var(--brand-color);
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.2);
+        }
+
+        /* "PLAKA" ipucu yazısının rengi gri olsun */
+        .plate-input::placeholder {
+            color: #9ca3af;
+            font-weight: 500;
+            letter-spacing: 0;
+        }
+        .btn-pay {
+            background: var(--brand-color); border: none; padding: 12px 24px;
+            border-radius: 10px; color: white; font-weight: 700; cursor: pointer;
+        }
+
+        /* REZERVASYON LİSTESİ */
+        .res-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: white; padding: 20px; border-radius: 16px; margin-bottom: 15px;
+            border: 1px solid #f3f4f6;
+        }
+        .res-info h4 { margin: 0; font-size: 18px; }
+        .res-info p { margin: 5px 0 0; color: var(--text-grey); font-size: 14px; }
+        .btn-cancel { background: #fee2e2; color: #ef4444; border:none; padding: 10px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+        /* HELPER CLASSES */
+        .hidden { display: none !important; }
+
+        /* --- GÜN SEÇ BUTONLARI (Yeni Eklenen) --- */
+        .day-select-btn {
+            width: 100%;
+            height: 45px;          /* Kutucuklarla uyumlu yükseklik */
+            background-color: #111827; /* Koyu renk (Siyah/Lacivert) */
+            color: white;
+            border: none;
+            border-radius: 12px;   /* Yuvarlak köşeler */
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin: 0;             /* Dış boşluk olmasın */
+        }
+
+        .day-select-btn:hover {
+            background-color: var(--brand-color); /* Üzerine gelince Mavi */
+            transform: translateY(-2px);
+            box-shadow: 0 8px 15px rgba(37, 99, 235, 0.3);
+        }
+
+        .day-select-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* --- BAŞLIK ARKASINA BEYAZ KUTU --- */
+        #view-branches .page-header > div:first-child {
+            background-color: rgba(255, 255, 255, 0.95); /* Hafif şeffaf beyaz */
+            padding: 30px;           /* Yazı ile kenar arasındaki boşluk */
+            border-radius: 24px;     /* Yuvarlak kenarlar */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); /* Hafif gölge */
+
+            /* Kutunun çok yayılmaması için */
+            max-width: 600px;
+            backdrop-filter: blur(10px); /* Arkadaki resmi hafif bulanıklaştırır */
+        }
+
+        /* Yazı renklerini tekrar koyu yapıyoruz (Kutu beyaz olduğu için) */
+        #view-branches .page-title {
+            color: #111827 !important; /* Koyu Siyah/Lacivert */
+            text-shadow: none !important;
+            margin-bottom: 5px;
+        }
+
+        #view-branches .page-subtitle {
+            color: #6b7280 !important; /* Gri */
+            font-weight: 500;
+        }
+
+        /* --- ŞUBE DETAY SAYFASI DÜZENLEMELERİ --- */
+
+        /* 1. "Şubelere Dön" Butonu İçin Beyaz Kutu */
+        /* --- ÜST BUTONLAR (Geri Dön & Temizle) --- */
+        .top-bar button {
+            background-color: rgba(255, 255, 255, 0.95);
+            color: #111827 !important;
+            padding: 12px 25px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            backdrop-filter: blur(5px);
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+
+        .top-bar button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+            background-color: #ffffff;
+        }
+        /* 2. Başlık ve Açıklama Yazısı İçin Beyaz Kutu */
+        #view-lot .page-header > div:first-child {
+            background-color: rgba(255, 255, 255, 0.95);
+            padding: 25px 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            backdrop-filter: blur(10px);
+            display: inline-block; /* Kutuyu metin kadar genişletir, tüm satırı kaplamaz */
+            margin-bottom: 20px;
+        }
+
+        /* Kutu içindeki yazıların rengini koyu yap (Okunabilirlik için) */
+        #view-lot .page-title {
+            color: #111827 !important;
+            text-shadow: none !important;
+        }
+
+        #view-lot .page-subtitle {
+            color: #4b5563 !important;
+        }
+
+        /* --- REZERVASYONLARIM BAŞLIK KUTUSU --- */
+        .header-box {
+            background-color: rgba(255, 255, 255, 0.95); /* Yarı saydam beyaz */
+            padding: 25px 35px;      /* İç boşluk */
+            border-radius: 20px;     /* Yuvarlak kenar */
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15); /* Gölge */
+            backdrop-filter: blur(10px); /* Arka planı buzlama */
+            display: inline-block;   /* Kutu sadece yazı kadar genişlesin */
+            margin-bottom: 30px;     /* Altındaki listeyle mesafe */
+        }
+
+        /* Kutunun içindeki yazıların rengini koyu yap */
+        .header-box .page-title {
+            color: #111827 !important;
+            margin: 0;
+            text-shadow: none !important;
+        }
+
+        .header-box .page-subtitle {
+            color: #4b5563 !important;
+            margin-top: 5px;
+            margin-bottom: 0;
+        }
+
+        /* --- TOAST BİLDİRİM SİSTEMİ --- */
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 99999; /* Her şeyin üstünde */
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .toast-msg {
+            background: #ffffff;
+            color: #1e293b;
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+            border-left: 5px solid #2563eb; /* Marka rengin */
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            animation: toastIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .toast-msg.hide {
+            animation: toastOut 0.5s ease forwards;
+        }
+
+        .toast-header {
+            font-size: 12px;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .toast-body {
+            font-size: 15px;
+            font-weight: 500;
+        }
+
+        .toast-code {
+            font-family: monospace;
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: 4px;
+            color: #1e293b;
+            margin-top: 5px;
+        }
+
+        @keyframes toastIn {
+            from { transform: translateX(120%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        @keyframes toastOut {
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(120%); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+<div id="toast-container"></div>
+<div id="authContainer">
+    <div class="login-visual">
+        <h1>Park<br>Ultra</h1>
+        <p>Premium Rezervasyon Sistemi</p>
+    </div>
+    <div class="login-form-area">
+        <h2 style="font-size: 30px; margin-bottom: 10px;">Hoşgeldiniz</h2>
+        <p style="color: var(--text-grey); margin-bottom: 40px;">Devam etmek için hesabınıza giriş yapın.</p>
+
+        <div id="loginForm">
+            <div class="input-group">
+                <label>Telefon Numaranız</label>
+                <input type="tel" id="loginPhone" placeholder="(5xx) xxx xx xx" maxlength="19" oninput="formatPhoneNumber(this)">
+            </div>
+            <div class="input-group">
+                <label>Şifre</label>
+                <input type="password" id="loginPass" placeholder="••••••">
+            </div>
+            <button class="btn-big" onclick="login()">GÜVENLİ GİRİŞ</button>
+            <div class="btn-secondary-text" onclick="toggleAuth('register')">Hesap Oluştur</div>
+        </div>
+
+        <div id="registerForm" class="hidden">
+            <div id="step1">
+                <div class="input-group"><label>Ad Soyad</label><input type="text" id="regName"></div>
+                <div class="input-group"><label>Telefon</label><input type="tel" id="regPhone" oninput="formatPhoneNumber(this)"></div>
+                <button class="btn-big" onclick="sendSms()">Doğrulama Kodu Gönder</button>
+            </div>
+            <div id="step2" class="hidden">
+                <div class="input-group"><label>Gelen SMS Kodu</label><input type="text" id="smsCode" style="letter-spacing: 5px; text-align:center;"></div>
+                <div class="input-group"><label>Şifre Belirle</label><input type="password" id="regPass"></div>
+                <button class="btn-big" style="background: var(--brand-color);" onclick="register()">KAYDI TAMAMLA</button>
+            </div>
+            <div class="btn-secondary-text" onclick="toggleAuth('login')">Girişe Dön</div>
+        </div>
+    </div>
+</div>
+
+<div id="appContainer">
+    <aside>
+        <div class="brand">ParkUltra.</div>
+        <nav>
+            <button class="active" onclick="switchView('branches', this)">🏢 Şubeler</button>
+            <button onclick="switchView('my-reservations', this)">📅 Rezervasyonlarım</button>
+            <button id="adminBtn" class="hidden" onclick="switchView('admin', this)">⚙️ Yönetim Paneli</button>
+        </nav>
+        <div class="user-profile">
+            <div style="font-size: 12px; color: var(--text-grey); text-transform: uppercase;">Giriş Yapan</div>
+            <div id="userDisplayName" style="font-weight: 700; margin-top: 5px;">Kullanıcı Adı</div>
+            <button style="margin-top: 15px; color: #ef4444; font-size: 13px; text-align:left; background:none; border:none; cursor:pointer;" onclick="logout()">Çıkış Yap</button>
+        </div>
+    </aside>
+
+    <main>
+
+        <div id="view-branches">
+            <div class="page-header">
+                <div>
+                    <h2 class="page-title">Hoşgeldin</h2>
+                    <p class="page-subtitle">Rezervasyon yapmak istediğiniz konumu seçin.</p>
+                </div>
+            </div>
+            <div id="branchList" class="card-grid"></div>
+        </div>
+
+        <div id="view-lot" class="hidden">
+                <div class="top-bar" style="display: flex; justify-content: space-between; margin-bottom: 25px;">
+                    <button onclick="backToBranches()">← Şubelere Dön</button>
+                    <button onclick="clearAllSlots()" style="color: #ef4444 !important;">🗑️ Tümünü Temizle</button>
+                </div>
+
+                <div class="page-header">
+                <div>
+                    <h2 class="page-title" id="lotTitle">Şube Adı</h2>
+                    <p class="page-subtitle">Aşağıdaki tablodan uygun saatleri işaretleyin.</p>
+                </div>
+                <div>
+                    <div class="badge" style="background: #dbeafe; color: #1e40af;">Saatlik: 100₺</div>
+                    <div class="badge" style="background: #fef3c7; color: #b45309;">Günlük: 2000₺</div>
+                </div>
+            </div>
+
+            <div class="parking-layout">
+                <table id="parkingTable">
+                    <thead><tr id="headerRow"></tr></thead>
+                    <tbody id="tableBody"></tbody>
+                </table>
+            </div>
+
+            <div id="actionBar" class="action-bar">
+                <div>
+                    <div style="font-size: 12px; opacity: 0.7; margin-bottom: 5px;">TOPLAM TUTAR</div>
+                    <div class="price-display" id="priceDisplay">0 TL</div>
+                </div>
+                <input type="text" id="plate" class="plate-input" placeholder="PLAKA">
+                <button class="btn-pay" onclick="completeReservation()">ONAYLA & ÖDE</button>
+            </div>
+        </div>
+
+        <div id="view-my-reservations" class="hidden">
+            <div class="header-box">
+                <h2 class="page-title">Rezervasyonlarım</h2>
+                <p class="page-subtitle">Geçmiş ve aktif işlemleriniz.</p>
+            </div>
+
+            <div id="myReservationsList"></div>
+
+            <p id="noResMsg" class="hidden" style="text-align:center; color:white; margin-top:50px; font-weight:600; text-shadow: 0 2px 10px rgba(0,0,0,0.8);">
+                Henüz bir rezervasyonunuz yok.
+            </p>
+        </div>
+
+        <div id="view-admin" class="hidden">
+            <h2 class="page-title">Yönetim Paneli</h2>
+
+            <div style="display: flex; gap: 20px; margin: 30px 0;">
+                <div style="background: var(--text-dark); color: white; padding: 25px; border-radius: 16px; flex:1;">
+                    <div style="opacity:0.7; font-size:13px;">TOPLAM CİRO</div>
+                    <div id="adminIncome" style="font-size: 32px; font-weight:bold; margin-top:10px;">0 TL</div>
+                </div>
+                <div style="background: var(--brand-color); color: white; padding: 25px; border-radius: 16px; flex:1;">
+                    <div style="opacity:0.7; font-size:13px;">TOPLAM BİLET</div>
+                    <div id="adminOccupancy" style="font-size: 32px; font-weight:bold; margin-top:10px;">0</div>
+                </div>
+            </div>
+
+            <h3>Tüm Kayıtlar</h3>
+            <div id="adminList"></div>
+        </div>
+
+    </main>
+</div>
+
+<script>
+    const API_URL = "http://localhost:3000/api";
+    let currentUser = null;
+    let currentLotId = null;
+    let currentLotCapacity = 100;
+    let selectedSlots = [];
+
+    // --- NAVIGATION ---
+    function switchView(viewName, btnElement) {
+        // Tüm görünümleri gizle
+        document.getElementById('view-branches').classList.add('hidden');
+        document.getElementById('view-lot').classList.add('hidden');
+        document.getElementById('view-my-reservations').classList.add('hidden');
+        document.getElementById('view-admin').classList.add('hidden');
+
+        // Buton aktiflik durumu
+        if(btnElement) {
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+            btnElement.classList.add('active');
+        }
+
+        // İlgili görünümü aç
+        if(viewName === 'branches') {
+            document.getElementById('view-branches').classList.remove('hidden');
+            loadBranches();
+        } else if (viewName === 'my-reservations') {
+            document.getElementById('view-my-reservations').classList.remove('hidden');
+            loadMyReservations();
+        } else if (viewName === 'admin') {
+            document.getElementById('view-admin').classList.remove('hidden');
+            loadAdminData();
+        }
+    }
+
+    function backToBranches() {
+        document.getElementById('view-lot').classList.add('hidden');
+        document.getElementById('actionBar').classList.remove('visible');
+        switchView('branches', document.querySelector('nav button:first-child'));
+    }
+
+    // --- AUTH ---
+    function formatPhoneNumber(input) {
+        let value = input.value.replace(/\D/g, '');
+        if (value.startsWith('90')) value = value.substring(2);
+        if (value.startsWith('0')) value = value.substring(1);
+        if (value.length > 10) value = value.substring(0, 10);
+        let formattedValue = '+90';
+        if (value.length > 0) formattedValue += ' (' + value.substring(0, 3);
+        if (value.length >= 3) formattedValue += ') ' + value.substring(3, 6);
+        if (value.length >= 6) formattedValue += ' ' + value.substring(6, 8);
+        if (value.length >= 8) formattedValue += ' ' + value.substring(8, 10);
+        input.value = value.length === 0 ? "" : formattedValue;
+    }
+
+    function toggleAuth(type) {
+        document.getElementById('loginForm').classList.toggle('hidden');
+        document.getElementById('registerForm').classList.toggle('hidden');
+    }
+
+    // Yeni Bildirim Fonksiyonu
+    function showSmsToast(title, message, code = null) {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'toast-msg';
+
+        toast.innerHTML = `
+        <div class="toast-header">${title}</div>
+        <div class="toast-body">${message}</div>
+        ${code ? `<div class="toast-code">${code}</div>` : ''}
+    `;
+
+        container.appendChild(toast);
+
+        // 5 saniye sonra otomatik kaldır
+        setTimeout(() => {
+            toast.classList.add('hide');
+            setTimeout(() => toast.remove(), 500);
+        }, 5000);
+    }
+
+    // Güncellenmiş sendSms Fonksiyonu
+    async function sendSms() {
+        const phoneInput = document.getElementById('regPhone');
+        const phone = phoneInput.value.replace(/\D/g, '').replace(/^90/, '');
+        const cleanPhone = "+90" + phone;
+
+        if (phone.length < 10) {
+            showSmsToast("HATA", "Lütfen geçerli bir telefon numarası girin.");
+            return;
+        }
+
+        try {
+            const res = await fetch(`${API_URL}/auth/send-sms`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ phone: cleanPhone })
+            });
+            const data = await res.json();
+
+            if(data.error) {
+                showSmsToast("SİSTEM HATASI", data.error);
+                return;
+            }
+
+            // İşte o havalı bildirim burada tetikleniyor!
+            if(data.test_code) {
+                showSmsToast("MESAJ", "Aktivasyon kodunuz:", data.test_code);
+            }
+
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.remove('hidden');
+        } catch(e) {
+            showSmsToast("BAĞLANTI HATASI", "Sunucuya ulaşılamadı.");
+        }
+    }
+
+    async function register() {
+        // Basit validasyon ile kayıt (Eski kod mantığı)
+        const name = document.getElementById('regName').value;
+        const phone = "+90" + document.getElementById('regPhone').value.replace(/\D/g, '').replace(/^90/, '');
+        const code = document.getElementById('smsCode').value;
+        const password = document.getElementById('regPass').value;
+
+        const res = await fetch(`${API_URL}/auth/register`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ name, phone, code, password })
+        });
+        const data = await res.json();
+        if(data.error) alert(data.error);
+        else { alert("Kayıt Başarılı"); toggleAuth('login'); }
+    }
+
+    async function login() {
+        const phone = "+90" + document.getElementById('loginPhone').value.replace(/\D/g, '').replace(/^90/, '');
+        const password = document.getElementById('loginPass').value;
+
+        try {
+            const res = await fetch(`${API_URL}/auth/login`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ phone, password })
+            });
+            const data = await res.json();
+            if(data.error) return alert(data.error);
+
+            currentUser = data.user;
+            // Login ekranını kaldır, App'i göster
+            document.getElementById('authContainer').style.display = 'none';
+            document.getElementById('appContainer').classList.add('active');
+
+            document.getElementById('userDisplayName').innerText = currentUser.name || currentUser.phone;
+            if(currentUser.role === 'admin') document.getElementById('adminBtn').classList.remove('hidden');
+
+            loadBranches();
+        } catch(e) { alert("Giriş hatası"); }
+    }
+
+    function logout() { location.reload(); }
+
+    // --- DATA LOADERS ---
+    async function loadBranches() {
+        const res = await fetch(`${API_URL}/parking-lots`);
+        const lots = await res.json();
+        const list = document.getElementById('branchList');
+        list.innerHTML = '';
+        lots.forEach(lot => {
+            const div = document.createElement('div');
+            div.className = 'branch-card';
+            div.onclick = () => selectBranch(lot);
+            div.innerHTML = `
+                <div class="badge">${lot.location}</div>
+                <h3 style="margin: 15px 0 5px 0; font-size: 20px;">${lot.name}</h3>
+                <div class="card-number">${lot.capacity} <span style="font-size:14px; color:var(--text-grey); font-weight:400;">Kapasite</span></div>
+                <div style="color: var(--brand-color); font-weight:600; font-size:14px;">Şubeye Git &rarr;</div>
+            `;
+            list.appendChild(div);
+        });
+    }
+
+    function selectBranch(lot) {
+        currentLotId = lot.id;
+        currentLotCapacity = lot.capacity;
+        document.getElementById('view-branches').classList.add('hidden');
+        document.getElementById('view-lot').classList.remove('hidden');
+        document.getElementById('lotTitle').innerText = lot.name;
+        loadGrid();
+    }
+
+    async function loadGrid() {
+        // 1. Tablo Başlıklarını Oluştur
+        const days = ["PZT", "SAL", "ÇAR", "PER", "CUM", "CTS", "PAZ"];
+        const hours = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19.00", "20.00", "21.00", "22.00", "23.00"];
+
+        const thead = document.getElementById('headerRow');
+        thead.innerHTML = '<th></th>' + days.map(d => `<th>${d}</th>`).join('');
+
+        const tbody = document.getElementById('tableBody');
+        tbody.innerHTML = '';
+
+        // 2. Tablo Gövdesini Oluştur (Varsayılan değer: 0 / Kapasite)
+        hours.forEach(h => {
+            let row = `<tr><td><span style="font-size:11px; font-weight:bold; color:var(--text-grey);">${h}</span></td>`;
+            days.forEach(d => {
+                // DEĞİŞİKLİK BURADA: Nokta (•) yerine "0/100" yazdırıyoruz
+                row += `<td id="${d}-${h}" class="cell" onclick="toggleSlot('${d}', '${h}')">0/${currentLotCapacity}</td>`;
+            });
+            row += '</tr>';
+            tbody.innerHTML += row;
+        });
+
+        // 3. En Alt Satır (Tüm Gün Seç Butonları)
+        let footerRow = '<tr><td style="vertical-align: middle; text-align:right; padding-right:10px; font-size:11px; font-weight:bold; color:var(--text-grey);">TÜM GÜN</td>';
+        days.forEach(d => {
+            footerRow += `<td style="padding-top:10px;">
+                <button class="day-select-btn" onclick="selectDay('${d}')">SEÇ</button>
+            </td>`;
+        });
+        footerRow += '</tr>';
+        tbody.innerHTML += footerRow;
+
+        // 4. Doluluk Verilerini Çek ve İşle
+        selectedSlots = [];
+        updatePrice();
+
+        try {
+            const res = await fetch(`${API_URL}/lot-stats/${currentLotId}`);
+            const stats = await res.json();
+
+            stats.forEach(s => {
+                const cell = document.getElementById(`${s.day}-${s.hour}`);
+                if(cell) {
+                    // DEĞİŞİKLİK BURADA: Gerçek doluluk oranını yazdır (Örn: 25/100)
+                    cell.innerText = `${s.count}/${currentLotCapacity}`;
+
+                    // Eğer kapasite dolduysa kırmızı yap
+                    if(s.count >= currentLotCapacity) {
+                        cell.classList.add('full');
+                        // İstersen tam dolunca yine "DOLU" yazabilirsin, ama oran istiyorsan üstteki satır kalsın.
+                        // cell.innerText = "DOLU";
+                    }
+                }
+            });
+        } catch (e) { console.error("Veri çekilemedi", e); }
+    }
+
+    function toggleSlot(day, hour) {
+        const cell = document.getElementById(`${day}-${hour}`);
+        if(cell.classList.contains('full')) return;
+
+        if(cell.classList.contains('selected')) {
+            cell.classList.remove('selected');
+            selectedSlots = selectedSlots.filter(s => !(s.day === day && s.hour === hour));
+        } else {
+            cell.classList.add('selected');
+            selectedSlots.push({day, hour});
+        }
+        updatePrice();
+    }
+
+    function selectDay(day) {
+        const hours = ["09:00", "10:00", "11:00", "12:00", "13:00", "14:00", "15:00", "16:00", "17:00", "18:00", "19.00", "20.00", "21.00", "22.00", "23.00"];
+
+        // 1. ADIM: Güvenlik Kontrolü (Arada dolu saat var mı?)
+        for (let h of hours) {
+            const cell = document.getElementById(`${day}-${h}`);
+            // Eğer hücre varsa ve 'full' (kırmızı) ise işlemi durdur
+            if (cell && cell.classList.contains('full')) {
+                alert(`${h} saati tamamen dolu olduğu için tüm gün rezervasyon yapamazsınız.`);
+                return; // Buradan aşağıya inme, fonksiyondan çık.
+            }
+        }
+
+        // 2. ADIM: Eğer hepsi boşsa standart seçme/kaldırma işlemini yap
+        let availableSlots = [];
+        hours.forEach(h => {
+            const cell = document.getElementById(`${day}-${h}`);
+            if (cell && !cell.classList.contains('full')) {
+                availableSlots.push({ cell: cell, hour: h });
+            }
+        });
+
+        // Toggle Mantığı (Hepsi seçiliyse kaldır, değilse seç)
+        const isAllSelected = availableSlots.every(slot => slot.cell.classList.contains('selected'));
+
+        if (isAllSelected) {
+            // Hepsini Kaldır
+            availableSlots.forEach(slot => {
+                slot.cell.classList.remove('selected');
+                selectedSlots = selectedSlots.filter(s => !(s.day === day && s.hour === slot.hour));
+            });
+        } else {
+            // Hepsini Seç
+            availableSlots.forEach(slot => {
+                if (!slot.cell.classList.contains('selected')) {
+                    slot.cell.classList.add('selected');
+                    selectedSlots.push({ day: day, hour: slot.hour });
+                }
+            });
+        }
+
+        updatePrice();
+    }
+    function updatePrice() {
+        const bar = document.getElementById('actionBar');
+        if(selectedSlots.length > 0) bar.classList.add('visible');
+        else bar.classList.remove('visible');
+
+        const HOURLY = 100;
+        const DAILY = 2000;
+        const MAX_SLOTS = 15;
+
+        // Fiyat Hesapla
+        const dayCounts = {};
+        selectedSlots.forEach(s => { dayCounts[s.day] = (dayCounts[s.day] || 0) + 1; });
+
+        let total = 0;
+        for(let d in dayCounts) {
+            total += (dayCounts[d] >= MAX_SLOTS) ? DAILY : dayCounts[d] * HOURLY;
+        }
+        document.getElementById('priceDisplay').innerText = total + " TL";
+    }
+
+    async function completeReservation() {
+        const plate = document.getElementById('plate').value;
+        if(!plate) return alert("Plaka giriniz");
+
+        try {
+            const payload = {
+                parking_lot_id: currentLotId,
+                user_id: currentUser.id,
+                plate: plate,
+                slots: selectedSlots
+            };
+            const res = await fetch(`${API_URL}/reserve`, {
+                method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload)
+            });
+            const data = await res.json();
+            if(data.error) throw new Error(data.error);
+            alert("✅ Rezervasyon Başarılı! PNR: " + data.pnr);
+            selectedSlots = [];
+            document.getElementById('plate').value = '';
+            loadGrid();
+        } catch(e) { alert(e.message); }
+    }
+
+    async function loadMyReservations() {
+        const container = document.getElementById('myReservationsList');
+        const noMsg = document.getElementById('noResMsg');
+        container.innerHTML = '';
+
+        const res = await fetch(`${API_URL}/reservations/user/${currentUser.id}`);
+        const data = await res.json();
+
+        if(data.length === 0) noMsg.classList.remove('hidden');
+        else noMsg.classList.add('hidden');
+
+        data.forEach(r => {
+            const div = document.createElement('div');
+            div.className = 'res-item';
+            div.innerHTML = `
+                <div class="res-info">
+                    <span style="font-size:12px; font-weight:bold; color:var(--brand-color);">PNR: ${r.pnr}</span>
+                    <h4>${r.branch_name}</h4>
+                    <p>${r.plate} • ${r.time_details.length} Farklı Gün İşlemi</p>
+                </div>
+                <button class="btn-cancel" onclick="cancelRes('${r.pnr}')">İptal Et</button>
+            `;
+            container.appendChild(div);
+        });
+    }
+
+    async function cancelRes(pnr) {
+        if(!confirm('İptal etmek istiyor musunuz?')) return;
+        await fetch(`${API_URL}/reserve/${pnr}`, { method: 'DELETE' });
+        loadMyReservations();
+    }
+
+    async function loadAdminData() {
+        try {
+            // 1. İstatistikleri Çek (Ciro ve Bilet Sayısı)
+            const resStats = await fetch(`${API_URL}/admin/stats`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ userId: currentUser.id })
+            });
+            const stats = await resStats.json();
+
+            // Ekrana Yazdır (Formatlı şekilde)
+            document.getElementById('adminIncome').innerText = (stats.totalIncome || 0).toLocaleString('tr-TR') + " TL";
+            document.getElementById('adminOccupancy').innerText = (stats.totalOccupancy || 0).toLocaleString('tr-TR');
+
+            // 2. Son Rezervasyonları Listele (Simülasyondan gelenler dahil)
+            const resList = await fetch(`${API_URL}/admin/reservations`);
+            const list = await resList.json();
+            const container = document.getElementById('adminList');
+            container.innerHTML = '';
+
+            // Sadece son 50 tanesini gösterelim (Performans için)
+            list.slice(0, 50).forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'res-item';
+                div.style.background = "rgba(255,255,255,0.8)";
+                div.innerHTML = `
+                <div class="res-info">
+                    <span style="font-size:11px; font-weight:bold; color:var(--brand-color);">PNR: ${item.pnr}</span>
+                    <h4 style="color:#111827">${item.branch_name}</h4>
+                    <p style="color:#4b5563">${item.plate} | ${item.time_details[0].day} - ${item.time_details[0].hours[0]}</p>
+                </div>
+                <button class="btn-cancel" onclick="cancelRes('${item.pnr}')">İptal Et</button>
+             `;
+                container.appendChild(div);
+            });
+        } catch (e) {
+            console.error("Admin verisi yüklenirken hata:", e);
+        }
+    }
+
+    function clearAllSlots() {
+        // 1. Seçili listesini boşalt
+        selectedSlots = [];
+
+        // 2. Tablodaki tüm mavi (seçili) hücrelerin rengini kaldır
+        document.querySelectorAll('.cell.selected').forEach(cell => {
+            cell.classList.remove('selected');
+        });
+
+        // 3. Fiyatı sıfırla ve ödeme çubuğunu gizle
+        updatePrice();
+    }
+
+
+</script>
+</body>
+</html>
